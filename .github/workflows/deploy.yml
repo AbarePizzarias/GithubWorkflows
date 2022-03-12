@@ -46,14 +46,14 @@ jobs:
         run: echo "branch_name=$(echo stg-${GITHUB_HEAD_REF})" >> $GITHUB_ENV
 
       - name: Setup environment variables for Staging
-        if: ${{ env.branch_name }} == 'stage'
+        if: env.branch_name == 'stage'
         run: |
           echo "environment_hosting=$(echo 'Staging')" >> $GITHUB_ENV
           echo "application_full_name=$(echo 'stg-'${{ inputs.application_name }})" >> $GITHUB_ENV
           echo "cluster_namespace=$(echo 'staging-'${{ inputs.project_context }})" >> $GITHUB_ENV
         
       - name: Setup environment variables for Production
-        if: ${{ env.branch_name }} == 'main'
+        if: env.branch_name == 'main'
         run: |
           echo "environment_hosting=$(echo 'Production')" >> $GITHUB_ENV
           echo "application_full_name=$(echo ${{ inputs.application_name }})" >> $GITHUB_ENV
@@ -99,7 +99,7 @@ jobs:
     - name: Build docker image
       id: build-image
       run: |
-        docker build -t ${{ secrets.ecr_registry }}/$application_full_name:latest .
+        docker build -t ${{ secrets.ecr_registry }}/${{ env.application_full_name }}:latest .
 
     - name: Setup AWS ECR for push images
       id: setup-aws-ecr
