@@ -30,31 +30,47 @@ on:
         required: true
         
 jobs:
+  
+  set-environment:
+    name: Set Environment Variables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get branch name (push)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "branch_name=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+
+      - name: Get branch name (pull request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "branch_name=$(echo stg-${GITHUB_HEAD_REF})" >> $GITHUB_ENV
+
+      - name: Setup environment variables for Staging
+        if: ${{ env.branch_name }} == 'stage'
+        run: |
+          echo "environment_hosting=$(echo 'Staging')" >> $GITHUB_ENV
+          echo "application_full_name=$(echo 'stg-'${{ inputs.application_name }})" >> $GITHUB_ENV
+          echo "cluster_namespace=$(echo 'staging-'${{ inputs.project_context }})" >> $GITHUB_ENV
+        
+      - name: Setup environment variables for Production
+        if: ${{ env.branch_name }} == 'main'
+        run: |
+          echo "environment_hosting=$(echo 'Production')" >> $GITHUB_ENV
+          echo "application_full_name=$(echo ${{ inputs.application_name }})" >> $GITHUB_ENV
+          echo "cluster_namespace=$(echo 'production-'${{ inputs.project_context }})" >> $GITHUB_ENV
+      
+      - name: result
+        run: echo 'rodando em ambiente de '${{ env.environment_hosting }}' nome da aplicação '${{ env.application_full_name }}' namespace'${{ env.cluster_namespace }}
+  
   deploy:
     name: Deploy
-    env:
-      environment_hosting: (${{ github.ref }} == 'refs/heads/main' || ${GITHUB_HEAD_REF} == 'main') && 'Production' || 'Staging' }}
-      application_full_name: (${{ github.ref }} == 'refs/heads/main' || ${GITHUB_HEAD_REF} == 'main') || 'stg-'${{ inputs.application_name }} }}
-      cluster_namespace: (${{ github.ref }} == 'refs/heads/main' || ${GITHUB_HEAD_REF} == 'main') || 'staging'-${{ inputs.project_context }} }}
+    needs: set-environment
     runs-on: ubuntu-latest
-    environment: $environment_hosting
+    environment: ${{ env.environment_hosting }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-        
-    - name: Get branch name (merge)
-      if: github.event_name != 'pull_request'
-      shell: bash
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
-
-    - name: Get branch name (pull request)
-      if: github.event_name == 'pull_request'
-      shell: bash
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
-
-    - name: Debug
-      run: echo ${{ env.BRANCH_NAME }}
       
     - name: Setup requirements tools
       id: setup-requirements
