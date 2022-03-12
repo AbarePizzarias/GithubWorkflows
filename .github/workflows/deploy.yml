@@ -33,31 +33,15 @@ jobs:
   deploy:
     name: Deploy
     env:
-      environment_hosting: ${{ github.ref }} == 'refs/heads/main' && 'Production' || 'Staging' }}
-      application_full_name: ${{ github.ref }} == 'refs/heads/main' && ${{ inputs.application_name }} || 'stg-'${{ inputs.application_name }} }}
-      cluster_namespace: ${{ github.ref }} == 'refs/heads/main' && 'production'-${{ inputs.project_context }} || 'staging'-${{ inputs.project_context }} }}
+      environment_hosting: (${{ github.ref }} == 'refs/heads/main' || ${GITHUB_HEAD_REF} == 'main') && 'Production' || 'Staging' }}
+      application_full_name: (${{ github.ref }} == 'refs/heads/main' || ${GITHUB_HEAD_REF} == 'main') || 'stg-'${{ inputs.application_name }} }}
+      cluster_namespace: (${{ github.ref }} == 'refs/heads/main' || ${GITHUB_HEAD_REF} == 'main') || 'staging'-${{ inputs.project_context }} }}
     runs-on: ubuntu-latest
     environment: $environment_hosting
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-
-    # extract branch name
-    - name: Extract branch name
-      if: github.event_name != 'pull_request'
-      shell: bash
-      run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
-      id: extract_branch
-
-    # extract branch name on pull request
-    - name: Print branch name
-      if: github.event_name == 'pull_request'
-      run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
-
-    # print branch name
-    - name: Get branch name
-      run: echo 'The branch name is' $BRANCH_NAME
         
     - name: Setup requirements tools
       id: setup-requirements
