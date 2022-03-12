@@ -46,7 +46,7 @@ jobs:
         run: echo "branch_name=$(echo stg-${GITHUB_HEAD_REF})" >> $GITHUB_ENV
 
       - name: Setup environment variables for Staging
-        if: env.branch_name == 'stage'
+        if: env.branch_name != 'stage'
         run: |
           echo echo "::set-output name=environment_hosting::Staging"
           echo echo "::set-output name=application_full_name::stg-${{ inputs.application_name }}"
