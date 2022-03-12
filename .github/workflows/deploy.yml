@@ -6,12 +6,6 @@ on:
       application_name:
         required: true
         type: string
-      helm_chart_name:
-        required: true
-        type: string
-      helm_chart_version:
-        required: true
-        type: string
       db_migrations_path:
         required: true
         type: string
@@ -30,7 +24,11 @@ on:
         required: true
       eks_cluster_name:
         required: true
-
+      helm_chart_name:
+        required: true
+      helm_chart_version:
+        required: true
+        
 jobs:
 
   set-environment:
