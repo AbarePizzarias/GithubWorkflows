@@ -72,7 +72,7 @@ jobs:
     - name: Setup requirements tools
       id: setup-requirements
       run: |
-        echo 'rodando em ambiente de '${{ jobs.set_environment.outputs.environment_hosting }}' nome da aplicação '${{ jobs.set_environment.outputs.env.application_full_name }}' namespace'${{ jobs.set_environment.outputs.env.cluster_namespace }}
+        echo 'rodando em ambiente de '${{ needs.set_environment.outputs.environment_hosting }}' nome da aplicação '${{ needs.set_environment.outputs.env.application_full_name }}' namespace'${{ needs.set_environment.outputs.env.cluster_namespace }}
         
         # Install EF for database update
         dotnet tool install --global dotnet-ef
