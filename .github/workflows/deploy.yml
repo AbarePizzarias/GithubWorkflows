@@ -37,7 +37,7 @@ jobs:
       application_full_name: (${{ github.ref }} == 'refs/heads/main' || ${GITHUB_HEAD_REF} == 'main') || 'stg-'${{ inputs.application_name }} }}
       cluster_namespace: (${{ github.ref }} == 'refs/heads/main' || ${GITHUB_HEAD_REF} == 'main') || 'staging'-${{ inputs.project_context }} }}
     runs-on: ubuntu-latest
-    environment: $environment_hosting
+    environment: ${{ environment_hosting }}
 
     steps:
     - name: Checkout
@@ -70,7 +70,7 @@ jobs:
     - name: Build docker image
       id: build-image
       run: |
-        docker build -t ${{ secrets.ecr_registry }}/$application_full_name:latest .
+        docker build -t ${{ secrets.ecr_registry }}/${{ application_full_name }}:latest .
 
     - name: Setup AWS ECR for push images
       id: setup-aws-ecr
@@ -80,7 +80,7 @@ jobs:
     - name: Push image to AWS ECR
       id: push-image
       run: |
-        docker push ${{ secrets.ecr_registry }}/$application_full_name:latest
+        docker push ${{ secrets.ecr_registry }}/${{ application_full_name }}:latest
 
     - name: Setup AWS EKS
       id: setup-aws-eks
@@ -102,4 +102,4 @@ jobs:
 
         export ASPNETCORE_ENVIRONMENT=$environment_hosting
         dotnet ef database update -p ${{ inputs.db_migrations_path }}
-        helm upgrade --install $application_full_name ./${{ inputs.helm_chart_name }} -n ${{ inputs.namespace }} --set service.name=$application_full_name --set env.hosting=$environment_hosting --set image.repository=${{ secrets.ecr_registry }}/$application_full_name:latest
+        helm upgrade --install ${{ application_full_name }} ./${{ inputs.helm_chart_name }} -n ${{ cluster_namespace }} --set service.name=${{ application_full_name }} --set env.hosting=${{ environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ application_full_name }}:latest
