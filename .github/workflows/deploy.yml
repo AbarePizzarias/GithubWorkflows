@@ -75,7 +75,7 @@ jobs:
     - name: Setup requirements tools
       id: setup-requirements
       run: |
-        echo 'branch'${{ env.branch_name }}'rodando em ambiente de '${{ env.environment_hosting }}' nome da aplicação '${{ env.application_full_name }}' namespace'${{ env.cluster_namespace }}
+        echo 'branch'${{ set-environment.env.branch_name }}'rodando em ambiente de '${{ set-environment.env.environment_hosting }}' nome da aplicação '${{ set-environment.env.application_full_name }}' namespace'${{ set-environment.env.cluster_namespace }}
         # Install EF for database update
         dotnet tool install --global dotnet-ef
         
