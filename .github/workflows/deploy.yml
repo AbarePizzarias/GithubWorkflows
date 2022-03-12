@@ -60,7 +60,7 @@ jobs:
           echo "cluster_namespace=$(echo 'production-'${{ inputs.project_context }})" >> $GITHUB_ENV
       
       - name: result
-        run: echo 'rodando em ambiente de '${{ env.environment_hosting }}' nome da aplicação '${{ env.application_full_name }}' namespace'${{ env.cluster_namespace }}
+        run: echo 'branch'${{ env.branch_name }}'rodando em ambiente de '${{ env.environment_hosting }}' nome da aplicação '${{ env.application_full_name }}' namespace'${{ env.cluster_namespace }}
   
   deploy:
     name: Deploy
