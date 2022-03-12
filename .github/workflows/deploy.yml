@@ -66,7 +66,7 @@ jobs:
     name: Deploy
     needs: set-environment
     runs-on: ubuntu-latest
-    environment: ${{ env.environment_hosting }}
+    environment: aaaaaaaaaaaaaaah
 
     steps:
     - name: Checkout
