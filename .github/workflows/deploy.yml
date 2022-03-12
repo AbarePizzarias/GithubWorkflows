@@ -31,7 +31,7 @@ on:
         
 jobs:
   
-  set-environment:
+  set_environment:
     name: Set Environment Variables
     runs-on: ubuntu-latest
     steps:
@@ -48,23 +48,20 @@ jobs:
       - name: Setup environment variables for Staging
         if: env.branch_name == 'stage'
         run: |
-          echo "environment_hosting=$(echo 'Staging')" >> $GITHUB_ENV
-          echo "application_full_name=$(echo 'stg-'${{ inputs.application_name }})" >> $GITHUB_ENV
-          echo "cluster_namespace=$(echo 'staging-'${{ inputs.project_context }})" >> $GITHUB_ENV
+          echo echo "::set-output name=environment_hosting::Staging"
+          echo echo "::set-output name=application_full_name::stg-${{ inputs.application_name }}"
+          echo echo "::set-output name=environment_hosting::staging-${{ inputs.project_context }}"
         
       - name: Setup environment variables for Production
         if: env.branch_name == 'main'
         run: |
-          echo "environment_hosting=$(echo 'Production')" >> $GITHUB_ENV
-          echo "application_full_name=$(echo ${{ inputs.application_name }})" >> $GITHUB_ENV
-          echo "cluster_namespace=$(echo 'production-'${{ inputs.project_context }})" >> $GITHUB_ENV
-      
-      - name: result
-        run: echo 'branch'${{ env.branch_name }}'rodando em ambiente de '${{ env.environment_hosting }}' nome da aplicação '${{ env.application_full_name }}' namespace'${{ env.cluster_namespace }}
-  
+          echo echo "::set-output name=environment_hosting::Production"
+          echo echo "::set-output name=application_full_name::${{ inputs.application_name }}"
+          echo echo "::set-output name=environment_hosting::production-${{ inputs.project_context }}"
+          
   deploy:
     name: Deploy
-    needs: set-environment
+    needs: set_environment
     runs-on: ubuntu-latest
     environment: aaaaaaaaaaaaaaah
 
@@ -75,7 +72,8 @@ jobs:
     - name: Setup requirements tools
       id: setup-requirements
       run: |
-        echo 'branch'${{ set-environment.env.branch_name }}'rodando em ambiente de '${{ set-environment.env.environment_hosting }}' nome da aplicação '${{ set-environment.env.application_full_name }}' namespace'${{ set-environment.env.cluster_namespace }}
+        echo 'rodando em ambiente de '${{ jobs.set_environment.outputs.environment_hosting }}' nome da aplicação '${{ jobs.set_environment.outputs.env.application_full_name }}' namespace'${{ jobs.set_environment.outputs.env.cluster_namespace }}
+        
         # Install EF for database update
         dotnet tool install --global dotnet-ef
         
