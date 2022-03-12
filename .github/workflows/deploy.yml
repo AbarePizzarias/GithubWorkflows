@@ -15,7 +15,7 @@ on:
       db_migrations_path:
         required: true
         type: string
-      namespace:
+      project_context:
         required: true
         type: string
 
@@ -43,9 +43,11 @@ jobs:
         then
             echo "::set-output name=environment::Production"
             echo "::set-output name=application_prefix::"
+            echo "::set-output name=namespace::production-${{ inputs.project_context }}"
         else
             echo "::set-output name=environment::Staging"
             echo "::set-output name=application_prefix::stg-"
+            echo "::set-output name=namespace::staging-${{ inputs.project_context }}"
             
   deploy:
     name: Deploy
@@ -53,7 +55,7 @@ jobs:
     env:
       environment_hosting: ${{ needs.set-environment.outputs.environment }}
       application_full_name: ${{ needs.set-environment.outputs.application_prefix }}${{ inputs.application_name }}
-      
+      cluster_namespace: ${{ needs.set-environment.outputs.namespace }}
     runs-on: ubuntu-latest
     environment: $environment_hosting
 
