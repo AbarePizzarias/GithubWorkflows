@@ -33,7 +33,7 @@ jobs:
   deploy:
     name: Deploy
     env:
-      environment_hosting: ${{ $REF == 'refs/heads/main' && 'Production' || 'Staging' }}
+      environment_hosting: ${{ $GITHUB_REF == 'refs/heads/main' && 'Production' || 'Staging' }}
       application_full_name: ${{ $REF == 'refs/heads/main' && ${{ inputs.application_name }} || 'stg-'${{ inputs.application_name }} }}
       cluster_namespace: ${{ $REF == 'refs/heads/main' && 'production'-${{ inputs.project_context }} || 'staging'-${{ inputs.project_context }} }}
     runs-on: ubuntu-latest
