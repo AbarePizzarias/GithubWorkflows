@@ -30,30 +30,12 @@ on:
         required: true
         
 jobs:
-
-  set-environment:
-    name: Set environment
-    runs-on: ubuntu-latest
-    steps:
-    - id: set-env
-      run: |
-        if [$REF == 'refs/heads/main']
-        then
-            echo "::set-output name=environment::Production"
-            echo "::set-output name=application_prefix::"
-            echo "::set-output name=namespace::production-${{ inputs.project_context }}"
-        else
-            echo "::set-output name=environment::Staging"
-            echo "::set-output name=application_prefix::stg-"
-            echo "::set-output name=namespace::staging-${{ inputs.project_context }}"
-            
   deploy:
     name: Deploy
-    needs: set-environment
     env:
-      environment_hosting: ${{ needs.set-environment.outputs.environment }}
-      application_full_name: ${{ needs.set-environment.outputs.application_prefix }}${{ inputs.application_name }}
-      cluster_namespace: ${{ needs.set-environment.outputs.namespace }}
+      environment_hosting: ${{ $REF == 'refs/heads/main' && 'Production' || 'Staging' }}
+      application_full_name: ${{ $REF == 'refs/heads/main' && ${{ inputs.application_name }} || 'stg-'${{ inputs.application_name }} }}
+      cluster_namespace: ${{ $REF == 'refs/heads/main' && 'production'-${{ inputs.project_context }} || 'staging'-${{ inputs.project_context }} }}
     runs-on: ubuntu-latest
     environment: $environment_hosting
 
