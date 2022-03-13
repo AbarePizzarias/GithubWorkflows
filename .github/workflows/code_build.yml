@@ -2,6 +2,12 @@ name: Build | Tests | Coverage
 
 on: 
   workflow_call:
+
+    inputs:
+      dotnet_version:
+        required: true
+        type: string
+        
     secrets:
       code_analisys_api_token:
         required: true
@@ -11,8 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     name: Build | Tests | Coverage
     steps:
+
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
       
       - name: Install dependencies
         run: dotnet restore
