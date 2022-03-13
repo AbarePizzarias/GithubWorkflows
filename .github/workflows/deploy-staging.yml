@@ -32,8 +32,77 @@ on:
         
 jobs:
 
-  jobson:
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
+    environment: staging
+    env:
+      application_prefix: stg
+      environment_hosting: Staging
+      namespace: staging-${{ inputs.project_context }}
+
     steps:
-      - name: test
-        run: echo version ${{ secrets.helm_chart_version }}
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup requirements tools
+      id: setup-requirements
+      run: |
+        
+        # Install EF for database update
+        dotnet tool install --global dotnet-ef
+        
+        # Kubectl
+        curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/linux/amd64/kubectl
+        chmod +x ./kubectl
+        mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+
+        # Helm
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+      
+    - name: AWS Configure credentials 
+      id: aws-configure
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.aws_client_id }}
+        aws configure set aws_secret_access_key ${{ secrets.aws_client_secret }}
+        aws configure set default.region ${{ secrets.aws_region }}
+
+    - name: Build docker image
+      id: build-image
+      run: |
+        docker build -t ${{ secrets.ecr_registry }}/${{ env.application_prefix }}-${{ inputs.application_name }}:latest .
+
+    - name: Setup AWS ECR for push images
+      id: setup-aws-ecr
+      run: |
+        aws ecr get-login-password --region ${{ secrets.aws_region }} | docker login --username AWS --password-stdin ${{ secrets.ecr_registry }}
+
+    - name: Push image to AWS ECR
+      id: push-image
+      run: |
+        docker push ${{ secrets.ecr_registry }}/${{ env.application_prefix }}-${{ inputs.application_name }}:latest
+
+    - name: Setup AWS EKS
+      id: setup-aws-eks
+      run: |
+        aws eks update-kubeconfig --name ${{ secrets.eks_cluster_name }}
+
+    - name: Setup AWS ECR for pull helm chart
+      id: setup-ecr-helm
+      run: |
+        export HELM_EXPERIMENTAL_OCI=1
+        aws ecr get-login-password --region ${{ secrets.aws_region }} | helm registry login --username AWS --password-stdin ${{ secrets.ecr_registry }}
+
+    - name: Deploy to EKS
+      id: deploy-eks
+      run: |
+        export HELM_EXPERIMENTAL_OCI=1
+        helm pull oci://${{ secrets.ecr_registry }}/${{ inputs.helm_chart_name }} --version ${{ inputs.helm_chart_version }}
+        tar -xvzf ${{ inputs.helm_chart_name }}-${{ secrets.helm_chart_version }}.tgz
+
+        export ASPNETCORE_ENVIRONMENT=${{ env.environment_hosting }}
+        dotnet ef database update -p ${{ inputs.db_migrations_path }}
+        
+        helm upgrade --install ${{ env.application_prefix }}-${{ inputs.application_name }} ./${{ inputs.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ env.application_prefix }}-${{ inputs.application_name }} --set env.hosting=${{ env.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ env.application_prefix }}-${{ inputs.application_name }}:latest
