@@ -36,4 +36,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: test
-        run: echo version ${{ secrets.API_HELM_CHART_VERSION }}       
+        run: echo version ${{ secrets.helm_chart_version }}
