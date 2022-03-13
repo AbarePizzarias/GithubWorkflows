@@ -42,18 +42,21 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_hosting }}
     env:
-      kubernetes_namespace: ${{ inputs.environment,, }}${{ inputs.project_context,, }}
+      kubernetes_namespace: ${{ inputs.environment }}${{ inputs.project_context }}
       application_full_name: ${{ inputs.application_prefix }}${{ inputs.application_name }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       
+    - name: Setup environment variables
+      run: |
+        echo "kubernetes_namespace=${ inputs.environment,, }${ inputs.project_context }" >>${GITHUB_ENV}
+        echo "application_full_name=${inputs.application_prefix}" >>${GITHUB_ENV}
+        
     - name: Setup requirements tools
       id: setup-requirements
       run: |
-      
-        echo $kubernetes_namespace' =< namespace '$application_full_name' <= application_full_name
-      
+        
         # Install EF for database update
         dotnet tool install --global dotnet-ef
         
