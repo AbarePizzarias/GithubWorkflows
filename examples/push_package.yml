@@ -3,6 +3,7 @@ on:
   push:
     branches:    
       - main
+      - stage
 
 env:
   dotnet_version: 5.0.x
