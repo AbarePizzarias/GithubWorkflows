@@ -7,15 +7,13 @@ on:
       application_name:
         required: true
         type: string
-      application_prefix:
-        type: string
       environment_hosting:
         required: true
         type: string
-      db_migrations_path:
+      namespace:
         required: true
         type: string
-      project_context:
+      db_migrations_path:
         required: true
         type: string
 
@@ -41,18 +39,10 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment_hosting }}
-    env:
-      kubernetes_namespace: ${{ inputs.environment }}${{ inputs.project_context }}
-      application_full_name: ${{ inputs.application_prefix }}${{ inputs.application_name }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      
-    - name: Setup environment variables
-      run: |
-        echo "kubernetes_namespace=${ inputs.environment,, }${ inputs.project_context }" >>${GITHUB_ENV}
-        echo "application_full_name=${inputs.application_prefix}" >>${GITHUB_ENV}
-        
+
     - name: Setup requirements tools
       id: setup-requirements
       run: |
@@ -80,7 +70,7 @@ jobs:
     - name: Build docker image
       id: build-image
       run: |
-        docker build -t ${{ secrets.ecr_registry }}/${{ env.application_full_name }}:latest .
+        docker build -t ${{ secrets.ecr_registry }}/${{ inputs.application_name }}:latest .
 
     - name: Setup AWS ECR for push images
       id: setup-aws-ecr
@@ -90,7 +80,7 @@ jobs:
     - name: Push image to AWS ECR
       id: push-image
       run: |
-        docker push ${{ secrets.ecr_registry }}/$application_full_name:latest
+        docker push ${{ secrets.ecr_registry }}/${{ inputs.application_name }}:latest
 
     - name: Setup AWS EKS
       id: setup-aws-eks
@@ -110,6 +100,6 @@ jobs:
         helm pull oci://${{ secrets.ecr_registry }}/${{ inputs.helm_chart_name }} --version ${{ inputs.helm_chart_version }}
         tar -xvzf ${{ inputs.helm_chart_name }}-${{ inputs.helm_chart_version }}.tgz
 
-        export ASPNETCORE_ENVIRONMENT=$environment_hosting
+        export ASPNETCORE_ENVIRONMENT=${{ inputs.environment_hosting }}
         dotnet ef database update -p ${{ inputs.db_migrations_path }}
-        helm upgrade --install $application_full_name ./${{ inputs.helm_chart_name }} -n $cluster_namespace --set service.name=$application_full_name --set env.hosting=$environment_hosting --set image.repository=${{ secrets.ecr_registry }}/$application_full_name:latest
+        helm upgrade --install ${{ inputs.application_name }} ./${{ inputs.helm_chart_name }} -n ${{ inputs.namespace }} --set service.name=${{ inputs.application_name }} --set env.hosting=${{ inputs.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ inputs.application_name }}:latest
