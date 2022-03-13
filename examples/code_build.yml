@@ -3,11 +3,14 @@ on:
   pull_request:
     branches:    
       - main
+      
+env:
+  dotnet_version: 5.0.x
 
 jobs:
   workflow:
     uses: AbarePizzarias/GithubWorkflows/.github/workflows/code_build.yml@main
     with:
-      dotnet_version: 5.0.x
+      dotnet_version: ${{ env.dotnet_version }}
     secrets:
       code_analisys_api_token: ${{ secrets.CODACY_TOKEN }}

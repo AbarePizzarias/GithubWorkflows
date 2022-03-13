@@ -4,14 +4,21 @@ on:
     branches:    
       - main
 
+env:
+  dotnet_version: 5.0.x
+  project_context: xxxx
+  application_name: xxxxx
+  db_migrations_path: src/xxxxx
+
 jobs:
+
   workflow:
     uses: AbarePizzarias/GithubWorkflows/.github/workflows/production_deploy.yml@main
     with:
-      application_name: xxxxxxxx
-      db_migrations_path: src/xxxxx
-      project_context: xxxx
-      dotnet_version: 5.0.x
+      dotnet_version: ${{ env.dotnet_version }}
+      project_context: ${{ env.project_context }}
+      application_name: ${{ env.application_name }}
+      db_migrations_path: ${{ env.db_migrations_path }}
     secrets:
       ecr_registry: ${{ secrets.ECR_REGISTRY }}
       aws_client_id: ${{ secrets.AWS_CLIENT_ID }}
