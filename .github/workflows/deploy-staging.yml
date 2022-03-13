@@ -38,6 +38,7 @@ jobs:
     environment: staging
     env:
       application_prefix: stg
+      environment_hosting: Staging
       namespace: staging-${{ inputs.project_context }}
 
     steps:
@@ -101,6 +102,7 @@ jobs:
         helm pull oci://${{ secrets.ecr_registry }}/${{ inputs.helm_chart_name }} --version ${{ inputs.helm_chart_version }}
         tar -xvzf ${{ inputs.helm_chart_name }}-${{ inputs.helm_chart_version }}.tgz
 
-        export ASPNETCORE_ENVIRONMENT=${{ inputs.environment_hosting }}
+        export ASPNETCORE_ENVIRONMENT=${{ env.environment_hosting }}
         dotnet ef database update -p ${{ inputs.db_migrations_path }}
-        helm upgrade --install ${{ env.application_prefix }}-${{ inputs.application_name }} ./${{ inputs.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ env.application_prefix }}-${{ inputs.application_name }} --set env.hosting=${{ inputs.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ env.application_prefix }}-${{ inputs.application_name }}:latest
+        
+        helm upgrade --install ${{ env.application_prefix }}-${{ inputs.application_name }} ./${{ inputs.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ env.application_prefix }}-${{ inputs.application_name }} --set env.hosting=${{ env.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ env.application_prefix }}-${{ inputs.application_name }}:latest
