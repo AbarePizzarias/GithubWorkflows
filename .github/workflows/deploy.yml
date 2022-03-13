@@ -3,7 +3,13 @@ name: Teste
 on: 
   workflow_call:
     inputs:
+      
       application_name:
+        required: true
+        type: string
+      application_prefix:
+        type: string
+      environment_hosting:
         required: true
         type: string
       db_migrations_path:
@@ -30,41 +36,14 @@ on:
         required: true
         
 jobs:
-  
-  set_environment:
-    name: Set Environment Variables
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get branch name (push)
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: echo "branch_name=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-
-      - name: Get branch name (pull request)
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: echo "branch_name=$(echo stg-${GITHUB_HEAD_REF})" >> $GITHUB_ENV
-
-      - name: Setup environment variables for Staging
-        if: env.branch_name != 'stage'
-        run: |
-          echo echo "::set-output name=environment_hosting::Staging"
-          echo echo "::set-output name=application_full_name::stg-${{ inputs.application_name }}"
-          echo echo "::set-output name=environment_hosting::staging-${{ inputs.project_context }}"
-        
-      - name: Setup environment variables for Production
-        if: env.branch_name == 'main'
-        run: |
-          echo echo "::set-output name=environment_hosting::Production"
-          echo echo "::set-output name=application_full_name::${{ inputs.application_name }}"
-          echo echo "::set-output name=environment_hosting::production-${{ inputs.project_context }}"
           
   deploy:
     name: Deploy
-    needs: set_environment
     runs-on: ubuntu-latest
-    environment: aaaaaaaaaaaaaaah
-
+    environment: ${{ inputs.environment_hosting }}
+    env:
+      kubernetes_namespace: ${{ inputs.environment,, }}${{ inputs.project_context,, }}
+      application_full_name: ${{ inputs.application_prefix }}${{ inputs.application_name }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -72,8 +51,9 @@ jobs:
     - name: Setup requirements tools
       id: setup-requirements
       run: |
-        echo 'rodando em ambiente de '${{ needs.set_environment.outputs.environment_hosting }}' nome da aplicação '${{ needs.set_environment.outputs.env.application_full_name }}' namespace'${{ needs.set_environment.outputs.env.cluster_namespace }}
-        
+      
+        echo $kubernetes_namespace' =< namespace '$application_full_name' <= application_full_name
+      
         # Install EF for database update
         dotnet tool install --global dotnet-ef
         
