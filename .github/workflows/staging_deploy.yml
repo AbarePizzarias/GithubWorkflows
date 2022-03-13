@@ -1,4 +1,4 @@
-name: Teste
+name: Staging Deployment
 
 on: 
   workflow_call:

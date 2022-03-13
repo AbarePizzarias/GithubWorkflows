@@ -1,0 +1,32 @@
+name: Push Package
+
+on: 
+  workflow_call:
+
+    inputs:
+      project_path:
+        required: true
+        type: string
+
+    secrets:
+      nuget_token:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    environment: production
+    steps:
+
+      - name: Install dependencies
+        run: dotnet restore ${{ inputs.project_path }}
+
+      - name: Build
+        run: dotnet build ${{ inputs.project_path }} --configuration Release --no-restore
+
+      - name: Create package
+        run: dotnet pack ${{ inputs.project_path }} --configuration Release
+
+      - name: Publish package
+        run: dotnet nuget push ${{ inputs.project_path }}/bin/Release/*.nupkg -k ${{ secrets.nuget_token }} -s "github"
