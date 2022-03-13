@@ -1,0 +1,14 @@
+name: Push Package
+on:
+  push:
+    branches:    
+      - main
+
+jobs:
+  workflow:
+    uses: AbarePizzarias/GithubWorkflows/.github/workflows/push_package.yml@main
+    with:
+      project_path: src/xxxxx
+      dotnet_version: 5.0.x
+    secrets:
+      nuget_token: ${{ secrets.ECR_REGISTRY }}

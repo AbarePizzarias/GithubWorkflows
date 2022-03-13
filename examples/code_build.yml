@@ -1,0 +1,13 @@
+name: Build | Tests | Coverage
+on:
+  pull_request:
+    branches:    
+      - main
+
+jobs:
+  workflow:
+    uses: AbarePizzarias/GithubWorkflows/.github/workflows/code_build.yml@main
+    with:
+      dotnet_version: 5.0.x
+    secrets:
+      code_analisys_api_token: ${{ secrets.CODACY_TOKEN }}
