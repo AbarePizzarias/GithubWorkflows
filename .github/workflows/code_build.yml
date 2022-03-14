@@ -36,7 +36,7 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Development
         run: |
-          dotnet test /p:CollectCoverage=true /p:CoverletOutput=../coverage /p:CoverletOutputFormat=opencover
+          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="[*]*CommandValidator" /p:ExcludeByFile=\"**/*Controller.cs,**/*Program.cs,**/*Startup.cs,**/*Map.cs,**/*Query.cs,**/*Parse.cs,**/*Dto.cs,**/Migrations/**,**/*Infra.Config/**,**/*Infra.IoC/**\"
           echo ::set-output name=coverage_file::$(echo $(find . -name "coverage.opencover.xml"))
         
       - name: Run codacy-coverage-reporter
