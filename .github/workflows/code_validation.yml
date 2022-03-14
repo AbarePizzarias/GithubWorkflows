@@ -1,4 +1,4 @@
-name: Build | Tests | Coverage
+name: Code Validation
 
 on: 
   workflow_call:
