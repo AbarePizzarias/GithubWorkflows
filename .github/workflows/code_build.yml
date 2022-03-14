@@ -33,11 +33,15 @@ jobs:
         run: dotnet build --no-restore
           
       - name: Test with the dotnet CLI
-        run: dotnet test /p:CollectCoverage=true /p:CoverletOutput=../coverage /p:CoverletOutputFormat=opencover
+        id: test_coverage
         env:
           ASPNETCORE_ENVIRONMENT: Development
+        run: |
+          dotnet test /p:CollectCoverage=true /p:CoverletOutput=../coverage /p:CoverletOutputFormat=opencover
+          echo ::set-output name=coverage_file::$(echo $(find . -name "coverage.opencover.xml"))
         
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           api-token: ${{ secrets.code_analisys_api_token }}
+          coverage-reports: ${{ steps.test_coverage.outputs.coverage_file }}
