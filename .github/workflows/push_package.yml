@@ -29,12 +29,6 @@ jobs:
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
 
-      - name: Install dependencies
-        run: dotnet restore ${{ inputs.project_path }}
-
-      - name: Build
-        run: dotnet build ${{ inputs.project_path }} --configuration Release --no-restore
-
       - name: Create package
         run: dotnet pack ${{ inputs.project_path }} --configuration Release
 
