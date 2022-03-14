@@ -13,9 +13,8 @@ on:
         required: true
 
 jobs:
-  build-tests-coverage:
+  workflow:
     runs-on: ubuntu-latest
-    name: Build | Tests | Coverage
     steps:
 
       - name: Checkout
