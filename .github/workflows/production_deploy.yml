@@ -7,9 +7,6 @@ on:
       application_name:
         required: true
         type: string
-      environment_hosting:
-        required: true
-        type: string
       project_context:
         required: true
         type: string
@@ -37,15 +34,16 @@ on:
         required: true
         
 jobs:
-          
+
   workflow:
     runs-on: ubuntu-latest
     environment: production
     env:
       environment_hosting: Production
       namespace: production-${{ inputs.project_context }}
-      
+
     steps:
+
     - name: Checkout
       uses: actions/checkout@v2
 
@@ -113,4 +111,5 @@ jobs:
 
         export ASPNETCORE_ENVIRONMENT=${{ env.environment_hosting }}
         dotnet ef database update -p ${{ inputs.db_migrations_path }}
+        
         helm upgrade --install ${{ inputs.application_name }} ./${{ secrets.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ inputs.application_name }} --set env.hosting=${{ env.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ inputs.application_name }}:latest
