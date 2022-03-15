@@ -10,10 +10,10 @@ on:
       project_context:
         required: true
         type: string
+      db_migrations_path:
+        type: string
       dotnet_version:
         required: true
-        type: string
-      db_migrations_path:
         type: string
 
     secrets:
