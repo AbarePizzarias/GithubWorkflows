@@ -11,7 +11,7 @@ on:
         required: true
         type: string
       db_migrations_path:
-        required: true
+        required: false
         type: string
       dotnet_version:
         required: true
@@ -102,14 +102,18 @@ jobs:
         export HELM_EXPERIMENTAL_OCI=1
         aws ecr get-login-password --region ${{ secrets.aws_region }} | helm registry login --username AWS --password-stdin ${{ secrets.ecr_registry }}
 
+    - name: DB Migrations Update
+      id: db-migrations-update
+      if: db_migrations_path
+      run: |
+        export ASPNETCORE_ENVIRONMENT=${{ env.environment_hosting }}
+        dotnet ef database update -p ${{ inputs.db_migrations_path }}
+        
     - name: Deploy to EKS
       id: deploy-eks
       run: |
         export HELM_EXPERIMENTAL_OCI=1
         helm pull oci://${{ secrets.ecr_registry }}/${{ secrets.helm_chart_name }} --version ${{ secrets.helm_chart_version }}
         tar -xvzf ${{ secrets.helm_chart_name }}-${{ secrets.helm_chart_version }}.tgz
-
-        export ASPNETCORE_ENVIRONMENT=${{ env.environment_hosting }}
-        dotnet ef database update -p ${{ inputs.db_migrations_path }}
         
         helm upgrade --install ${{ inputs.application_name }} ./${{ secrets.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ inputs.application_name }} --set env.hosting=${{ env.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ inputs.application_name }}:latest
