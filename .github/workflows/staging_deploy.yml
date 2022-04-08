@@ -11,7 +11,7 @@ on:
         required: true
         type: string
       db_migrations_path:
-        required: true
+        required: false
         type: string
       dotnet_version:
         required: true
