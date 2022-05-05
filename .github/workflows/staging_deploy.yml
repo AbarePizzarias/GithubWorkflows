@@ -43,13 +43,6 @@ jobs:
       namespace: staging-${{ inputs.project_context }}
 
     steps:
-
-    - name: DB Migrations Update
-      id: db-migrations-update
-      if: ${{ inputs.db_migrations_path != '' }}
-      run: |
-        export ASPNETCORE_ENVIRONMENT=${{ env.environment_hosting }}
-        dotnet ef database update -p ${{ inputs.db_migrations_path }}
         
     - name: Checkout
       uses: actions/checkout@v2
@@ -110,6 +103,13 @@ jobs:
         aws ecr get-login-password --region ${{ secrets.aws_region }} | helm registry login --username AWS --password-stdin ${{ secrets.ecr_registry }}
         helm pull oci://${{ secrets.ecr_registry }}/${{ secrets.helm_chart_name }} --version ${{ secrets.helm_chart_version }}
         tar -xvzf ${{ secrets.helm_chart_name }}-${{ secrets.helm_chart_version }}.tgz
+        
+    - name: DB Migrations Update
+      id: db-migrations-update
+      if: ${{ inputs.db_migrations_path != '' }}
+      run: |
+        export ASPNETCORE_ENVIRONMENT=${{ env.environment_hosting }}
+        dotnet ef database update -p ${{ inputs.db_migrations_path }}
 
     - name: Deploy Application
       id: deploy-eks
