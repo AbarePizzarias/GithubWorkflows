@@ -106,7 +106,7 @@ jobs:
 
     - name: DB Migrations Update
       id: db-migrations-update
-      if: ${{ inputs.db_migrations_path }}
+      if: ${{ inputs.db_migrations_path != '' }}
       run: |
         export ASPNETCORE_ENVIRONMENT=${{ env.environment_hosting }}
         dotnet ef database update -p ${{ inputs.db_migrations_path }}
