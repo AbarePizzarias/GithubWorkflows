@@ -78,7 +78,7 @@ jobs:
     - name: Build docker image
       id: build-image
       run: |
-        docker build -t ${{ secrets.ecr_registry }}/${{ inputs.application_name }}:${GITHUB_SHA} .
+        docker build -t ${{ secrets.ecr_registry }}/${{ inputs.application_name }}:${{ github.run_id }} .
 
     - name: Setup AWS ECR for push images
       id: setup-aws-ecr
@@ -88,7 +88,7 @@ jobs:
     - name: Push image to AWS ECR
       id: push-image
       run: |
-        docker push ${{ secrets.ecr_registry }}/${{ inputs.application_name }}:${GITHUB_SHA}
+        docker push ${{ secrets.ecr_registry }}/${{ inputs.application_name }}:${{ github.run_id }}
 
     - name: Setup AWS EKS
       id: setup-aws-eks
@@ -113,4 +113,4 @@ jobs:
     - name: Deploy Application
       id: deploy-eks
       run: |
-        helm upgrade --install ${{ inputs.application_name }} ./${{ secrets.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ inputs.application_name }} --set env.hosting=${{ env.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ inputs.application_name }}:${GITHUB_SHA}
+        helm upgrade --install ${{ inputs.application_name }} ./${{ secrets.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ inputs.application_name }} --set env.hosting=${{ env.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ inputs.application_name }}:${{ github.run_id }}
