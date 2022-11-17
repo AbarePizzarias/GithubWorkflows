@@ -15,6 +15,18 @@ on:
       dotnet_version:
         required: true
         type: string
+      cpu_request:
+        required: true
+        type: string
+      cpu_limit:
+        required: true
+        type: string
+      memory_request:
+        required: true
+        type: string
+      memory_limit:
+        required: true
+        type: string
 
     secrets:
       ecr_registry:
@@ -113,4 +125,4 @@ jobs:
     - name: Deploy Application
       id: deploy-eks
       run: |
-        helm upgrade --install ${{ inputs.application_name }} ./${{ secrets.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ inputs.application_name }} --set env.hosting=${{ env.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ inputs.application_name }}:${{ github.run_id }}
+        helm upgrade --install ${{ inputs.application_name }} ./${{ secrets.helm_chart_name }} -n ${{ env.namespace }} --set service.name=${{ inputs.application_name }} --set env.hosting=${{ env.environment_hosting }} --set image.repository=${{ secrets.ecr_registry }}/${{ inputs.application_name }}:${{ github.run_id }} --set resources.cpu.limit:${{ inputs.cpu_limit }} --set resources.cpu.request:${{ inputs.cpu_request }} --set resources.memory.limit:${{ inputs.memory_limit }} --set resources.memory.request:${{ inputs.memory_request }}
