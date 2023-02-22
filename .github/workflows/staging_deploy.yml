@@ -7,9 +7,6 @@ on:
       application_name:
         required: true
         type: string
-      project_context:
-        required: true
-        type: string
       db_migrations_path:
         type: string
       dotnet_version:
@@ -52,7 +49,7 @@ jobs:
     env:
       application_prefix: stg
       environment_hosting: Staging
-      namespace: staging-${{ inputs.project_context }}
+      namespace: staging
 
     steps:
 
